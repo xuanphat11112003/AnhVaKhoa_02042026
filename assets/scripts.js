@@ -185,9 +185,89 @@ function getMusicFromURL() {
   return musicPlaylist[currentMusicIndex] || "./t.mp3";
 }
 window[_0x5826d4(369)] = { data: { ringTexts: ringTexts } };
-// Khởi tạo hệ thống âm thanh
-async function initMusicSystem() {
-  // Tự động quét và tạo playlist
+// Tạo màn hình loading
+function createLoadingScreen() {
+  const loadingDiv = document.createElement("div");
+  loadingDiv.id = "loading-screen";
+  loadingDiv.style.position = "fixed";
+  loadingDiv.style.top = "0";
+  loadingDiv.style.left = "0";
+  loadingDiv.style.width = "100%";
+  loadingDiv.style.height = "100%";
+  loadingDiv.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
+  loadingDiv.style.display = "flex";
+  loadingDiv.style.flexDirection = "column";
+  loadingDiv.style.justifyContent = "center";
+  loadingDiv.style.alignItems = "center";
+  loadingDiv.style.zIndex = "10000";
+  loadingDiv.style.color = "white";
+  loadingDiv.style.fontFamily = "Arial, sans-serif";
+  
+  loadingDiv.innerHTML = `
+    <div style="text-align: center;">
+      <div style="font-size: 48px; margin-bottom: 20px;">🌌</div>
+      <h1 style="font-size: 32px; margin-bottom: 10px;">CodeGalaxy</h1>
+      <p style="font-size: 18px; margin-bottom: 30px;">Đang tải vũ trụ...</p>
+      <div id="loading-progress" style="width: 300px; height: 4px; background: #333; border-radius: 2px; margin: 0 auto;">
+        <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #ff69b4, #ff1493); border-radius: 2px; transition: width 0.3s ease;"></div>
+      </div>
+      <p id="loading-text" style="font-size: 14px; margin-top: 15px; color: #ccc;">Đang chuẩn bị...</p>
+    </div>
+  `;
+  
+  document.body.appendChild(loadingDiv);
+  return loadingDiv;
+}
+
+// Cập nhật tiến trình loading
+function updateLoadingProgress(progress, text) {
+  const progressBar = document.getElementById('progress-bar');
+  const loadingText = document.getElementById('loading-text');
+  
+  if (progressBar) progressBar.style.width = progress + '%';
+  if (loadingText) loadingText.textContent = text;
+}
+
+// Ẩn màn hình loading
+function hideLoadingScreen() {
+  const loadingScreen = document.getElementById('loading-screen');
+  if (loadingScreen) {
+    loadingScreen.style.opacity = '0';
+    loadingScreen.style.transition = 'opacity 0.5s ease';
+    setTimeout(() => {
+      loadingScreen.remove();
+    }, 500);
+  }
+}
+
+// Preload tất cả hình ảnh
+async function preloadImages() {
+  updateLoadingProgress(20, "Đang tải hình ảnh...");
+  
+  const imagePromises = heartImages.map((imagePath, index) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const progress = 20 + (index + 1) * (40 / heartImages.length);
+        updateLoadingProgress(progress, `Đã tải hình ${index + 1}/${heartImages.length}`);
+        resolve();
+      };
+      img.onerror = () => {
+        console.log(`❌ Không thể tải hình: ${imagePath}`);
+        resolve(); // Vẫn resolve để không block
+      };
+      img.src = imagePath;
+    });
+  });
+  
+  await Promise.all(imagePromises);
+  updateLoadingProgress(60, "Hoàn thành tải hình ảnh!");
+}
+
+// Preload nhạc
+async function preloadMusic() {
+  updateLoadingProgress(60, "Đang tải nhạc...");
+  
   musicPlaylist = await generateMusicPlaylist();
   
   if (musicPlaylist.length === 0) {
@@ -195,26 +275,70 @@ async function initMusicSystem() {
     musicPlaylist = ["./t.mp3"];
   }
   
+  // Preload bài đầu tiên
+  const firstSong = musicPlaylist[0];
+  if (firstSong) {
+    audioElement.src = firstSong;
+    audioElement.preload = "auto";
+    
+    return new Promise((resolve) => {
+      audioElement.addEventListener('canplaythrough', () => {
+        updateLoadingProgress(90, "Hoàn thành tải nhạc!");
+        resolve();
+      }, { once: true });
+      
+      audioElement.addEventListener('error', () => {
+        console.log("❌ Không thể tải nhạc:", firstSong);
+        resolve();
+      }, { once: true });
+    });
+  }
+}
+
+// Khởi tạo hệ thống âm thanh
+async function initMusicSystem() {
+  // Tạo audio element trước
   audioElement = document.createElement("audio");
   audioElement.style.display = "none";
   audioElement.muted = false;
   document.body.appendChild(audioElement);
+  
+  // Tạo màn hình loading
+  createLoadingScreen();
+  
+  try {
+    // Preload hình ảnh
+    await preloadImages();
+    
+    // Preload nhạc
+    await preloadMusic();
+    
+    // Hoàn thành loading
+    updateLoadingProgress(100, "Sẵn sàng khám phá vũ trụ!");
+    
+    // Ẩn loading sau 1 giây
+    setTimeout(() => {
+      hideLoadingScreen();
+      
+      // Event listeners
+      audioElement.addEventListener('ended', playNextSong);
+      audioElement.addEventListener('error', handleAudioError);
 
-  // Load bài đầu tiên
-  loadCurrentSong();
-
-  // Event listeners
-  audioElement.addEventListener('ended', playNextSong);
-  audioElement.addEventListener('error', handleAudioError);
-
-  // Auto play sau khi click
-  const startMusic = () => {
-    audioElement.play().catch((e) => {
-      console.log("Trình duyệt chặn autoplay:", e);
-    });
-    document.removeEventListener("click", startMusic);
-  };
-  document.addEventListener("click", startMusic);
+      // Auto play sau khi click
+      const startMusic = () => {
+        audioElement.play().catch((e) => {
+          console.log("Trình duyệt chặn autoplay:", e);
+        });
+        document.removeEventListener("click", startMusic);
+      };
+      document.addEventListener("click", startMusic);
+      
+    }, 1000);
+    
+  } catch (error) {
+    console.log("❌ Lỗi khi tải tài nguyên:", error);
+    hideLoadingScreen();
+  }
 }
 
 function handleAudioError() {
