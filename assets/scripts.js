@@ -141,39 +141,18 @@ let musicPlaylist = [];
 let currentMusicIndex = 0;
 let audioElement = null;
 
-// Hàm tự động phát hiện các file songX.mp3 có sẵn
-async function generateMusicPlaylist() {
-  const foundSongs = [];
-  let songNumber = 1;
-  let maxAttempts = 100; // Giới hạn tối đa 100 bài để tránh vòng lặp vô hạn
+// Tạo danh sách nhạc cố định - chỉ 5 bài đầu tiên
+function generateMusicPlaylist() {
+  const musicFiles = [
+    "./music/song1.mp3",
+    "./music/song2.mp3", 
+    "./music/song3.mp3",
+    "./music/song4.mp3",
+    "./music/song5.mp3"
+  ];
   
-  console.log("🔍 Đang quét folder music để tìm các file songX.mp3...");
-  
-  while (songNumber <= maxAttempts) {
-    const songPath = `./music/song${songNumber}.mp3`;
-    
-    try {
-      // Thử tải file để kiểm tra xem có tồn tại không
-      const response = await fetch(songPath, { method: 'HEAD' });
-      if (response.ok) {
-        foundSongs.push(songPath);
-        console.log(`✅ Tìm thấy: song${songNumber}.mp3`);
-      } else {
-        // Nếu không tìm thấy file, dừng lại
-        console.log(`❌ Không tìm thấy song${songNumber}.mp3, dừng quét`);
-        break;
-      }
-    } catch (error) {
-      // Nếu có lỗi, dừng lại
-      console.log(`❌ Lỗi khi kiểm tra song${songNumber}.mp3, dừng quét`);
-      break;
-    }
-    
-    songNumber++;
-  }
-  
-  console.log(`🎵 Tìm thấy tổng cộng ${foundSongs.length} bài nhạc`);
-  return foundSongs;
+  console.log(`🎵 Sử dụng playlist với ${musicFiles.length} bài nhạc`);
+  return musicFiles;
 }
 
 function getMusicFromURL() {
@@ -265,10 +244,10 @@ async function preloadImages() {
 }
 
 // Preload nhạc
-async function preloadMusic() {
+function preloadMusic() {
   updateLoadingProgress(60, "Đang tải nhạc...");
   
-  musicPlaylist = await generateMusicPlaylist();
+  musicPlaylist = generateMusicPlaylist();
   
   if (musicPlaylist.length === 0) {
     console.log("❌ Không tìm thấy file nhạc nào, sử dụng file mặc định");
