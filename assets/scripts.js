@@ -243,7 +243,7 @@ async function preloadImages() {
   updateLoadingProgress(60, "Hoàn thành tải hình ảnh!");
 }
 
-// Preload nhạc
+// Preload nhạc - chỉ cần sẵn sàng phát cơ bản
 function preloadMusic() {
   updateLoadingProgress(60, "Đang tải nhạc...");
   
@@ -254,14 +254,15 @@ function preloadMusic() {
     musicPlaylist = ["./t.mp3"];
   }
   
-  // Preload bài đầu tiên
+  // Chỉ cần set src và preload metadata thôi
   const firstSong = musicPlaylist[0];
   if (firstSong) {
     audioElement.src = firstSong;
-    audioElement.preload = "auto";
+    audioElement.preload = "metadata"; // Chỉ tải metadata, không tải toàn bộ file
     
     return new Promise((resolve) => {
-      audioElement.addEventListener('canplaythrough', () => {
+      // Chỉ cần loadedmetadata thôi, không cần canplaythrough
+      audioElement.addEventListener('loadedmetadata', () => {
         updateLoadingProgress(90, "Hoàn thành tải nhạc!");
         resolve();
       }, { once: true });
@@ -270,6 +271,13 @@ function preloadMusic() {
         console.log("❌ Không thể tải nhạc:", firstSong);
         resolve();
       }, { once: true });
+      
+      // Timeout để không bị treo quá lâu
+      setTimeout(() => {
+        console.log("⏰ Timeout tải nhạc, tiếp tục...");
+        updateLoadingProgress(90, "Hoàn thành tải nhạc!");
+        resolve();
+      }, 3000); // Chỉ đợi tối đa 3 giây
     });
   }
 }
