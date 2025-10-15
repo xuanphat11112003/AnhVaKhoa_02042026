@@ -111,11 +111,11 @@ function getHeartImagesFromURL() {
   }
   
   const defaultImages = [
-    './img/heart1.svg',
-    './img/heart2.svg', 
-    './img/heart3.svg',
-    './img/heart4.svg',
-    './img/heart5.svg'
+    './img/heart1.jpg',
+    './img/heart2.jpg', 
+    './img/heart5.svg',
+    './img/heart3.jpg',
+    './img/heart4.jpg'
   ];
   
   console.log("Không có URL, sử dụng ảnh default:", defaultImages.length, "ảnh");
@@ -136,45 +136,110 @@ function getRingTextsFromURL() {
 }
 const heartImages = getHeartImagesFromURL(),
   ringTexts = getRingTextsFromURL();
+// Tự động tạo danh sách nhạc từ folder music
+let musicPlaylist = [];
+let currentMusicIndex = 0;
+let audioElement = null;
+
+// Hàm tự động phát hiện các file songX.mp3 có sẵn
+async function generateMusicPlaylist() {
+  const foundSongs = [];
+  let songNumber = 1;
+  let maxAttempts = 100; // Giới hạn tối đa 100 bài để tránh vòng lặp vô hạn
+  
+  console.log("🔍 Đang quét folder music để tìm các file songX.mp3...");
+  
+  while (songNumber <= maxAttempts) {
+    const songPath = `./music/song${songNumber}.mp3`;
+    
+    try {
+      // Thử tải file để kiểm tra xem có tồn tại không
+      const response = await fetch(songPath, { method: 'HEAD' });
+      if (response.ok) {
+        foundSongs.push(songPath);
+        console.log(`✅ Tìm thấy: song${songNumber}.mp3`);
+      } else {
+        // Nếu không tìm thấy file, dừng lại
+        console.log(`❌ Không tìm thấy song${songNumber}.mp3, dừng quét`);
+        break;
+      }
+    } catch (error) {
+      // Nếu có lỗi, dừng lại
+      console.log(`❌ Lỗi khi kiểm tra song${songNumber}.mp3, dừng quét`);
+      break;
+    }
+    
+    songNumber++;
+  }
+  
+  console.log(`🎵 Tìm thấy tổng cộng ${foundSongs.length} bài nhạc`);
+  return foundSongs;
+}
+
 function getMusicFromURL() {
-  return (
-    new URLSearchParams(window.location.search).get('music') || "./t.mp3"
-  );
+  const urlMusic = new URLSearchParams(window.location.search).get('music');
+  if (urlMusic) {
+    return urlMusic;
+  }
+  // Nếu không có URL, sử dụng playlist
+  return musicPlaylist[currentMusicIndex] || "./t.mp3";
 }
 window[_0x5826d4(369)] = { data: { ringTexts: ringTexts } };
-const selectedMusic = getMusicFromURL();
-if (selectedMusic) {
-  const e = document.createElement("audio");
-  (e.src = selectedMusic),
-    (e.loop = true),
-    (e.muted = false),
-    (e.style.display = "none"),
-    document.body.appendChild(e);
-  const t = document.createElement("button");
-  (t.id = "toggle-audio"),
-    (t.className = "text-white btn-audio-toggle"),
-    (t.style.position = "absolute"),
-    (t.style.top = "15px"),
-    (t.style.right = "15px"),
-    (t.style.zIndex = "9999");
-  const n = document.createElement("i");
-  (n.id = "audio-icon"),
-    (n.className = "fa-solid fa-volume-high"),
-    t.appendChild(n),
-    document.body.appendChild(t);
-  const a = () => {
-    e.play().catch((e) => {
+// Khởi tạo hệ thống âm thanh
+async function initMusicSystem() {
+  // Tự động quét và tạo playlist
+  musicPlaylist = await generateMusicPlaylist();
+  
+  if (musicPlaylist.length === 0) {
+    console.log("❌ Không tìm thấy file nhạc nào, sử dụng file mặc định");
+    musicPlaylist = ["./t.mp3"];
+  }
+  
+  audioElement = document.createElement("audio");
+  audioElement.style.display = "none";
+  audioElement.muted = false;
+  document.body.appendChild(audioElement);
+
+  // Load bài đầu tiên
+  loadCurrentSong();
+
+  // Event listeners
+  audioElement.addEventListener('ended', playNextSong);
+  audioElement.addEventListener('error', handleAudioError);
+
+  // Auto play sau khi click
+  const startMusic = () => {
+    audioElement.play().catch((e) => {
       console.log("Trình duyệt chặn autoplay:", e);
-    }),
-      document.removeEventListener("click", a);
-  };
-  document.addEventListener("click", a),
-    t.addEventListener("click", () => {
-      e.muted
-        ? ((e.muted = false), (n.className = "fa-solid fa-volume-high"))
-        : ((e.muted = true), (n.className = "fa-solid fa-volume-xmark"));
     });
+    document.removeEventListener("click", startMusic);
+  };
+  document.addEventListener("click", startMusic);
 }
+
+function handleAudioError() {
+  console.log(`❌ Không thể tải: ${musicPlaylist[currentMusicIndex]}`);
+  playNextSong(); // Chuyển sang bài tiếp theo
+}
+
+function loadCurrentSong() {
+  const currentSong = musicPlaylist[currentMusicIndex];
+  if (currentSong) {
+    audioElement.src = currentSong;
+    console.log(`🎵 Đang tải: ${currentSong}`);
+  }
+}
+
+function playNextSong() {
+  currentMusicIndex = (currentMusicIndex + 1) % musicPlaylist.length;
+  loadCurrentSong();
+  audioElement.play().catch(e => console.log("Lỗi phát nhạc:", e));
+  console.log(`🎵 Chuyển sang bài: ${musicPlaylist[currentMusicIndex]}`);
+}
+
+
+// Khởi tạo hệ thống âm thanh
+initMusicSystem();
 const textureLoader = new _0x386f71[_0x5826d4(340)](),
   numGroups = heartImages.length,
   maxDensity = 15e3,
