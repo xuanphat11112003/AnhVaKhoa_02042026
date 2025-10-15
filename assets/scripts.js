@@ -119,7 +119,8 @@ function getHeartImagesFromURL() {
     './img/heart2.jpg',  // Chuyển từ JPG sang PNG
     './img/heart5.svg',  // SVG đã nhẹ
     './img/heart3.jpg',  // Chuyển từ JPG sang PNG
-    './img/heart4.jpg'   // Chuyển từ JPG sang PNG
+    './img/heart4.jpg',   // Chuyển từ JPG sang PNG
+    './img/IMG_0006.jpeg'
   ] ;
   
   console.log("Không có URL, sử dụng ảnh default:", defaultImages.length, "ảnh");
