@@ -110,13 +110,17 @@ function getHeartImagesFromURL() {
     return images;
   }
   
-  const defaultImages = [
-    './img/heart1.jpg',
-    './img/heart2.jpg', 
-    './img/heart5.svg',
-    './img/heart3.jpg',
-    './img/heart4.jpg'
-  ];
+  // Tùy chọn định dạng hình: 'original' hoặc 'lightweight'
+  const IMAGE_FORMAT = 'lightweight'; // Đổi thành 'original' nếu muốn dùng file gốc
+  
+  const defaultImages =  [
+    // Sử dụng SVG và PNG nhẹ hơn
+    './img/heart1.png',  // Chuyển từ JPG sang PNG
+    './img/heart2.png',  // Chuyển từ JPG sang PNG
+    './img/heart5.svg',  // SVG đã nhẹ
+    './img/heart3.png',  // Chuyển từ JPG sang PNG
+    './img/heart4.png'   // Chuyển từ JPG sang PNG
+  ] ;
   
   console.log("Không có URL, sử dụng ảnh default:", defaultImages.length, "ảnh");
   return defaultImages;
@@ -219,7 +223,7 @@ function hideLoadingScreen() {
   }
 }
 
-// Preload tất cả hình ảnh
+// Preload hình ảnh - tối ưu hóa tốc độ
 async function preloadImages() {
   updateLoadingProgress(20, "Đang tải hình ảnh...");
   
