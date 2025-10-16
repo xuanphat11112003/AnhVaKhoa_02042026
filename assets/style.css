@@ -6,6 +6,53 @@
   overflow: hidden;
 }
 
+/* Fullscreen support for modern phones */
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  /* Force fullscreen on mobile */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* Remove any default browser margins/padding */
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Force fullscreen on all mobile devices */
+@media screen and (max-width: 768px) {
+  html, body {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  
+  #container, canvas {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
 #container {
   width: 100vw;
   height: 100vh;
@@ -13,14 +60,26 @@
   position: fixed;
   top: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 10;
+  /* Force fullscreen - tràn ra hết màn hình */
+  margin: 0;
+  padding: 0;
 }
 
 canvas {
   position: fixed;
   top: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 11;
+  /* Force fullscreen canvas */
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0;
+  padding: 0;
 }
 
 /* ---- MÀN HÌNH CẢNH BÁO XOAY NGANG ---- */
