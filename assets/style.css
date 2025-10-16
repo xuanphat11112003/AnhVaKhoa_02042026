@@ -385,3 +385,120 @@ body.portrait-mode #landscape-warning {
   background-color: #203885;
   box-shadow: 0 6px 15px rgba(232, 65, 24, 0.8);
 }
+/* Fix khoảng trắng trên mobile */
+@media screen and (max-width: 768px) {
+  html, body {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    /* Force fullscreen */
+    min-width: 100vw !important;
+    min-height: 100vh !important;
+  }
+  
+  #container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    /* Đảm bảo không có khoảng trắng */
+    min-width: 100vw !important;
+    min-height: 100vh !important;
+  }
+  
+  canvas {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    /* Force canvas fullscreen */
+    min-width: 100vw !important;
+    min-height: 100vh !important;
+  }
+  
+  /* Ẩn home indicator */
+  body::after {
+    display: none !important;
+  }
+}
+
+/* Fix màn hình dọc - ẩn cảnh báo và hiển thị ứng dụng */
+@media screen and (orientation: portrait) {
+  body.portrait #landscape-warning {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  
+  #container {
+    display: block !important;
+    opacity: 1 !important;
+  }
+  
+  canvas {
+    display: block !important;
+    opacity: 1 !important;
+  }
+  
+  /* Force fullscreen cho portrait */
+  html, body {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+  
+  #container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  canvas {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* Đảm bảo ứng dụng luôn hiển thị */
+#container {
+  display: block !important;
+  opacity: 1 !important;
+}
+
+canvas {
+  display: block !important;
+  opacity: 1 !important;
+}
