@@ -148,7 +148,7 @@ let audioElement = null;
 // Tạo danh sách nhạc cố định - chỉ 5 bài đầu tiên
 function generateMusicPlaylist() {
   const musicFiles = [
-    "./music/song1.mp3",
+    
     "./music/song2.mp3", 
     "./music/song3.mp3",
     "./music/song4.mp3",
