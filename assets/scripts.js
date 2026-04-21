@@ -332,7 +332,19 @@ async function initMusicSystem() {
 }
 
 function handleAudioError() {
-  console.log(`❌ Không thể tải: ${musicPlaylist[currentMusicIndex]}`);
+  const errorCode = audioElement.error;
+  let errorMsg = "Unknown error";
+  
+  if (errorCode) {
+    switch(errorCode.code) {
+      case 1: errorMsg = "MEDIA_ERR_ABORTED"; break;
+      case 2: errorMsg = "MEDIA_ERR_NETWORK"; break;
+      case 3: errorMsg = "MEDIA_ERR_DECODE"; break;
+      case 4: errorMsg = "MEDIA_ERR_SRC_NOT_SUPPORTED"; break;
+    }
+  }
+  
+  console.log(`❌ Không thể tải: ${musicPlaylist[currentMusicIndex]} (Lỗi: ${errorMsg})`);
   playNextSong(); // Chuyển sang bài tiếp theo
 }
 
@@ -340,15 +352,28 @@ function loadCurrentSong() {
   const currentSong = musicPlaylist[currentMusicIndex];
   if (currentSong) {
     audioElement.src = currentSong;
-    console.log(`🎵 Đang tải: ${currentSong}`);
+    console.log(`🎵 Đang tải: ${currentSong} (Index: ${currentMusicIndex})`);
+    
+    // Thêm listener để theo dõi loading
+    const onLoadStart = () => {
+      console.log(`📥 Bắt đầu tải: ${currentSong}`);
+    };
+    
+    const onCanPlay = () => {
+      console.log(`✅ Có thể phát: ${currentSong}`);
+      audioElement.removeEventListener('canplay', onCanPlay);
+    };
+    
+    audioElement.addEventListener('loadstart', onLoadStart, { once: true });
+    audioElement.addEventListener('canplay', onCanPlay, { once: true });
   }
 }
 
 function playNextSong() {
   currentMusicIndex = (currentMusicIndex + 1) % musicPlaylist.length;
+  console.log(`🔄 Chuyển sang bài tiếp theo (Index: ${currentMusicIndex})`);
   loadCurrentSong();
-  audioElement.play().catch(e => console.log("Lỗi phát nhạc:", e));
-  console.log(`🎵 Chuyển sang bài: ${musicPlaylist[currentMusicIndex]}`);
+  audioElement.play().catch(e => console.log("⚠️ Lỗi phát nhạc:", e.message));
 }
 
 
