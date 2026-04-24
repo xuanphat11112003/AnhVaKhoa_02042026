@@ -693,7 +693,7 @@ function createHeartBurst(position) {
 
     const heart = new _0x386f71.Sprite(material);
     heart.position.copy(position);
-    heart.scale.set(0.25, 0.25, 1);
+    heart.scale.set(0.6, 0.6, 1);
 
     heart.userData.velocity = new _0x386f71.Vector3(
       (Math.random() - 0.5) * 0.04,
@@ -717,7 +717,7 @@ function updateBurstHearts() {
       heart.userData.life--;
 
       const progress = (25 - heart.userData.life) / 25;
-      const scaleValue = 0.3 + Math.sin(progress * Math.PI) * 0.25;
+      const scaleValue = 0.6 + Math.sin(progress * Math.PI) * 0.25;
 
       heart.scale.set(scaleValue, scaleValue, 1);
 
@@ -1853,7 +1853,8 @@ function startCameraAnimation() {
 const rent = atob(_0x5826d4(229)),
   raycaster = new _0x386f71[_0x5826d4(378)](),
   mouse = new _0x386f71[_0x5826d4(256)]();
-raycaster.params.Points.threshold = 5;
+const distance = camera.position.distanceTo(controls.target);
+raycaster.params.Points.threshold = Math.max(5, distance * 0.08);
 let introStarted = !1;
 const originalStarCount = starGeometry[_0x5826d4(201)](_0x5826d4(397))[
   _0x5826d4(202)
@@ -1880,7 +1881,7 @@ function createClickPulse(position) {
   const heart = createGlowMaterial("rgba(255,105,180,0.9)", 96, 0.9);
 
   heart.position.copy(position);
-  heart.scale.set(2, 2, 1);
+  heart.scale.set(1.2, 1.2, 1);
 
   heart.userData.life = 25;
   heart.userData.isClickPulse = true;
@@ -1898,14 +1899,38 @@ function onCanvasClick(e) {
 
   // Nếu đã mở intro rồi thì chỉ xử lý click hình, KHÔNG chạy lại click tinh cầu
   if (introStarted) {
-    raycaster.params.Points.threshold = 5;
+    const distance = camera.position.distanceTo(controls.target);
+    raycaster.params.Points.threshold = Math.max(5, distance * 0.08);
 
     const intersects = raycaster.intersectObjects(heartPointClouds, true);
 
     if (intersects.length > 0) {
-      const burstPosition = intersects[0].point.clone();
-      createHeartBurst(burstPosition);
+      const clickX = e.clientX;
+      const clickY = e.clientY;
+
+      let best = intersects[0];
+      let bestScreenDistance = Infinity;
+
+      intersects.forEach((hit) => {
+        const screenPos = hit.point.clone().project(camera);
+
+        const sx = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
+        const sy = (-screenPos.y * 0.5 + 0.5) * window.innerHeight;
+
+        const dx = sx - clickX;
+        const dy = sy - clickY;
+        const screenDistance = Math.sqrt(dx * dx + dy * dy);
+
+        if (screenDistance < bestScreenDistance) {
+          bestScreenDistance = screenDistance;
+          best = hit;
+        }
+      });
+
+      const burstPosition = best.point.clone();
+
       createClickPulse(burstPosition);
+      createHeartBurst(burstPosition);
     }
 
     return;
